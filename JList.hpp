@@ -57,6 +57,7 @@ inline void pointSwap(Point<Type> * pot1, Point<Type> * pot2)
 	pot2->val = temp;
 }
 
+
 //**********************************************************************//
 
 
@@ -86,10 +87,22 @@ public:
 	bool erase(Point<Type>* pos, Type val);
 	//数据查找
 	Point<Type>* find(Type val);
-	Point<Type>* find(Point<Type>* ptr, Type val);
+	Point<Type>* find(Point<Type>* pos, Type val);
+	Point<Type>* find_if(Point<Type>* pos, Type val,bool (*_Pred)());
+	Point<Type>* find_if(Point<Type>* pos, Type val,bool (*_Pred)(Type val));
+		//仿函数版本
+	template<class _Pred>
+	Point<Type>* find_if(Point<Type>* pos, Type val,_Pred pred);
 	//实用算法
 	void sort(Point<Type>* beg, Point<Type>* end);
-	void sort(Point<Type>* beg, Point<Type>* end, bool (*_Pred)(Type val));
+	void sort(Point<Type>* beg, Point<Type>* end,bool (*_Pred)(Type val_1,Type val_2));
+	template<class _Pred>
+	void sort(Point<Type>* beg, Point<Type>* end,_Pred pred);
+
+	void for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)());
+	void for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)(Type val));
+	template<class _Pred>
+	void for_each(Point<Type>* beg, Point<Type>* end,_Pred pred);
 	//遍历用迭代器
 	Point<Type>* front();
 	Point<Type>* back();
@@ -365,12 +378,65 @@ Point<Type>* JList<Type>::find(Type val)
 }
 //数据查找(提供指针重载版本)
 template<class Type>
-Point<Type>* JList<Type>::find(Point<Type>* ptr, Type val)
+Point<Type>* JList<Type>::find(Point<Type>* pos, Type val)
 {
-	Point<Type>* it = ptr;//创建迭代器
+	Point<Type>* it = pos;//创建迭代器
 	for (; it != this->m_End; it = it->next)
 	{
 		if (it->val == val)
+		{
+			return it;
+		}
+	}
+	//判断结束指针
+	if (it == this->m_End)
+	{
+		return m_End;
+	}
+}
+//条件查找
+template<class Type>
+Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,bool (*_Pred)())
+{
+	Point<Type>* it = pos;//创建迭代器
+	for (; it != this->m_End; it = it->next)
+	{
+		if (_Pred())
+		{
+			return it;
+		}
+	}
+	//判断结束指针
+	if (it == this->m_End)
+	{
+		return m_End;
+	}
+}
+template<class Type>
+Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,bool (*_Pred)(Type val))
+{
+	Point<Type>* it = pos;//创建迭代器
+	for (; it != this->m_End; it = it->next)
+	{
+		if (_Pred(it->val))
+		{
+			return it;
+		}
+	}
+	//判断结束指针
+	if (it == this->m_End)
+	{
+		return m_End;
+	}
+}
+	//仿函数版本
+template<class Type>template<class _Pred>
+Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,_Pred pred)
+{
+	Point<Type>* it = pos;//创建迭代器
+	for (; it != this->m_End; it = it->next)
+	{
+		if (pred(it->val))
 		{
 			return it;
 		}
@@ -494,15 +560,76 @@ void JList<Type>::clear()
 }
 
 //实用算法
+
+//排序
 template<class Type>
 void JList<Type>::sort(Point<Type>* beg, Point<Type>* end)
 {
 	//默认升序(采用bubbleSort)
-	for (Point<Type>* i = beg; i != end; i=i->next)
+	for (Point<Type>* i = beg; i != end->last; i=i->next)
 	{
-		for (Point<Type>* j = i; j != end; j = j->next)
+		for (Point<Type>* j = beg; j != end->last; j = j->next)
 		{
 			if ((j->val) > (j->next->val))
+			{
+				pointSwap(j, j->next);
+			}
+		}
+	}
+}
+template<class Type>
+void JList<Type>::sort(Point<Type>* beg, Point<Type>* end,bool (*_Pred)(Type val_1,Type val_2))
+{
+	//默认升序(采用bubbleSort)
+	for (Point<Type>* i = beg; i != end->last; i=i->next)
+	{
+		for (Point<Type>* j = beg; j != end->last; j = j->next)
+		{
+			if (_Pred(j->val,(j->next->val)))
+			{
+				pointSwap(j, j->next);
+			}
+		}
+	}
+}
+
+//遍历
+template<class Type>
+void JList<Type>::for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)())
+{
+	for(Point<Type> * it=beg;it!=end;it=it->next)
+	{
+		_Pred();
+	}
+}
+
+template<class Type>
+void JList<Type>::for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)(Type val))
+{
+	for(Point<Type> * it=beg;it!=end;it=it->next)
+	{
+		_Pred(it->val);
+	}
+}
+
+//仿函数测试
+template<class Type>template<class _Pred>
+void JList<Type>::for_each(Point<Type>* beg, Point<Type>* end,_Pred pred)
+{
+	for(Point<Type> * it=beg;it!=end;it=it->next)
+	{
+		pred(it->val);
+	}
+}
+template<class Type>template<class _Pred>
+void JList<Type>::sort(Point<Type>* beg, Point<Type>* end, _Pred pred)
+{
+	//默认升序(采用bubbleSort)
+	for (Point<Type>* i = beg; i != end->last; i=i->next)
+	{
+		for (Point<Type>* j = beg; j != end->last; j = j->next)
+		{
+			if (pred(j->val,(j->next->val)))
 			{
 				pointSwap(j, j->next);
 			}
