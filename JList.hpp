@@ -5,27 +5,30 @@
 
 //结点类
 template<class Type>
-class Point
+class JPoint
 {
 public:
-	Point();
-	Point(Type val);
-	~Point();
+	JPoint();
+	JPoint(Type val);
+	JPoint(JPoint& pot);
+	~JPoint();
+	bool operator==(JPoint& pot);
+	bool operator!=(JPoint& pot);
 public:
 	Type val;
-	Point* next;
-	Point* last;
+	JPoint* next;
+	JPoint* last;
 };
 //构造
 template<class Type>
-Point<Type>::Point()//默认构造
+JPoint<Type>::JPoint()//默认构造
 {
 	this->next = NULL;
 	this->last = NULL;
 }
 
 template<class Type>
-Point<Type>::Point(Type val)//有参构造
+JPoint<Type>::JPoint(Type val)//有参构造
 {
 	this->val = val;
 	this->next = NULL;
@@ -33,24 +36,53 @@ Point<Type>::Point(Type val)//有参构造
 }
 
 template<class Type>
-Point<Type>::~Point()//析构
+JPoint<Type>::JPoint(JPoint& pot)//拷贝构造
+{
+	this->val = pot.val;
+	this->next = NULL;
+	this->last = NULL;
+}
+
+template<class Type>
+JPoint<Type>::~JPoint()//析构
 {
 	this->next = NULL;
 	this->last = NULL;
 }
 
 
-//重载Point类左移运算符
+//重载JPoint类左移运算符
 template<class Type>
-std::ostream& operator<<(std::ostream& cout, Point<Type>& pot)
+std::ostream& operator<<(std::ostream& cout, JPoint<Type>& pot)
 {
 	cout << pot.val;
 	return cout;
 }
 
-//提供Point类的swap全局函数
+//重载JPoint的operator==
 template<class Type>
-inline void pointSwap(Point<Type> * pot1, Point<Type> * pot2)
+bool JPoint<Type>::operator==(JPoint<Type>& pot)
+{
+	if (this->val == pot.val)
+	{
+		return true;
+	}
+	return false;
+}
+//重载JPoint的operator!=
+template<class Type>
+bool JPoint<Type>::operator!=(JPoint<Type>& pot)
+{
+	if (this->val != pot.val)
+	{
+		return true;
+	}
+	return false;
+}
+
+//提供JPoint类的swap全局函数
+template<class Type>
+inline void pointSwap(JPoint<Type> * pot1, JPoint<Type> * pot2)
 {
 	Type temp = pot1->val;
 	pot1->val = pot2->val;
@@ -66,13 +98,12 @@ template<class Type>
 class JList
 {
 public:
-
 	//构造和析构
 	JList();
+	JList(JList<Type>& lt);
 	~JList();
 
 	//方法
-
 		//大小
 	int size();
 	//数据存储与删除
@@ -82,46 +113,47 @@ public:
 	void pop_front();
 	void clear();
 	//数据插入与移除
-	bool insert(Point<Type>* pos, Type val);
+	bool insert(JPoint<Type>* pos, Type val);
 	bool erase(Type val);
-	bool erase(Point<Type>* pos, Type val);
+	bool erase(JPoint<Type>* pos, Type val);
 	//数据查找
-	Point<Type>* find(Type val);
-	Point<Type>* find(Point<Type>* pos, Type val);
-	Point<Type>* find_if(Point<Type>* pos, Type val,bool (*_Pred)());
-	Point<Type>* find_if(Point<Type>* pos, Type val,bool (*_Pred)(Type val));
+	JPoint<Type>* find(Type val);
+	JPoint<Type>* find(JPoint<Type>* pos, Type val);
+	JPoint<Type>* find_if(JPoint<Type>* pos, Type val,bool (*_Pred)());
+	JPoint<Type>* find_if(JPoint<Type>* pos, Type val,bool (*_Pred)(Type val));
 		//仿函数版本
 	template<class _Pred>
-	Point<Type>* find_if(Point<Type>* pos, Type val,_Pred pred);
+	JPoint<Type>* find_if(JPoint<Type>* pos, Type val,_Pred pred);
 	//实用算法
-	void sort(Point<Type>* beg, Point<Type>* end);
-	void sort(Point<Type>* beg, Point<Type>* end,bool (*_Pred)(Type val_1,Type val_2));
+	void sort(JPoint<Type>* beg, JPoint<Type>* end);
+	void sort(JPoint<Type>* beg, JPoint<Type>* end,bool (*_Pred)(Type val_1,Type val_2));
 	template<class _Pred>
-	void sort(Point<Type>* beg, Point<Type>* end,_Pred pred);
+	void sort(JPoint<Type>* beg, JPoint<Type>* end,_Pred pred);
 
-	void for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)());
-	void for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)(Type val));
+	void for_each(JPoint<Type>* beg, JPoint<Type>* end, void (*_Pred)());
+	void for_each(JPoint<Type>* beg, JPoint<Type>* end, void (*_Pred)(Type val));
 	template<class _Pred>
-	void for_each(Point<Type>* beg, Point<Type>* end,_Pred pred);
+	void for_each(JPoint<Type>* beg, JPoint<Type>* end,_Pred pred);
 	//遍历用迭代器
-	Point<Type>* front();
-	Point<Type>* back();
-	Point<Type>* end();
+	JPoint<Type>* front();
+	JPoint<Type>* back();
+	JPoint<Type>* end();
 
-
-private:
+protected:
+	//安全遍历函数
+	inline bool isSafeInterval(JPoint<Type>* beg, JPoint<Type>* end);
+protected:
 	int m_Size;							//list的大小
 
-	Point<Type>* m_Front;				//头指针
-	Point<Type>* m_Back;				//尾指针
-	Point<Type>* m_End;					//结束指针(在尾指针后面)
+	JPoint<Type>* m_Front;				//头指针
+	JPoint<Type>* m_Back;				//尾指针
+	JPoint<Type>* m_End;					//结束指针(在尾指针后面)
 
-	Point<Type>* m_Quick;				//快指针
-	Point<Type>* m_Slow;				//慢指针
+	JPoint<Type>* m_Quick;				//快指针
+	JPoint<Type>* m_Slow;				//慢指针
 
-	Point<Type> m_Object_For_EndPtr;	//结束指针专用对象，勿挪用!!!
+	JPoint<Type> m_Object_For_EndPtr;	//结束指针专用对象，勿挪用!!!
 };
-
 
 //构造和析构
 template<class Type>
@@ -135,9 +167,54 @@ JList<Type>::JList()//默认构造
 	this->m_End = &this->m_Object_For_EndPtr;
 }
 template<class Type>
+JList<Type>::JList(JList<Type>& lt)//拷贝构造
+{
+	//先构造一遍(照搬默认构造)
+	this->m_Size = 0;
+	this->m_Front = NULL;
+	this->m_Back = NULL;
+	this->m_Quick = NULL;
+	this->m_Slow = NULL;
+	this->m_End = &this->m_Object_For_EndPtr;
+
+	//创建头结点(照搬push_back)
+	this->m_Front = new JPoint<Type>(lt.m_Front->val);
+	m_Quick = m_Front;
+	m_Slow = m_Front;
+	m_Back = m_Front;
+	m_Back->next = m_End;
+	m_End->last = m_Back;
+	m_Size = 1;
+	//写入
+	for (JPoint<Type>* it = lt.front()->next; it != lt.end(); it = it->next)
+	{
+		this->push_back(it->val);
+	}
+}
+template<class Type>
 JList<Type>::~JList()//析构
 {
 	this->clear();
+}
+
+//安全遍历函数
+template<class Type>
+inline bool JList<Type>::isSafeInterval(JPoint<Type>* beg, JPoint<Type>* end)
+{
+	JPoint<Type>* ite = beg;
+	while (*ite != m_Object_For_EndPtr)
+	{
+		if (ite == end)
+		{
+			return true;
+		}
+		ite = ite->next;
+	}
+	if (ite == end)
+	{
+		return true;
+	}
+	return false;
 }
 
 
@@ -149,7 +226,7 @@ void JList<Type>::push_back(Type val)
 	if (this->m_Front == NULL)
 	{
 		//头指针建立
-		m_Front = new Point<Type>(val);
+		m_Front = new JPoint<Type>(val);
 
 		//推进指针
 		m_Quick = m_Front;
@@ -167,7 +244,7 @@ void JList<Type>::push_back(Type val)
 	//已有头指针
 
 	//先创建结点
-	m_Quick = new Point<Type>(val);
+	m_Quick = new JPoint<Type>(val);
 
 	//链接结点
 	m_Slow->next = m_Quick;
@@ -191,7 +268,7 @@ void JList<Type>::push_front(Type val)
 	if (this->m_Front == NULL)
 	{
 		//头指针建立
-		m_Front = new Point<Type>(val);
+		m_Front = new JPoint<Type>(val);
 
 		//推进指针
 		m_Quick = m_Front;
@@ -209,7 +286,7 @@ void JList<Type>::push_front(Type val)
 	//已有头指针
 
 	//先创建结点
-	m_Quick = new Point<Type>(val);
+	m_Quick = new JPoint<Type>(val);
 
 	//链接结点
 	m_Front->last = m_Quick;
@@ -299,7 +376,7 @@ void JList<Type>::pop_front()
 	}
 
 	//先创建旧头指针
-	Point<Type>* oldFront = m_Front;
+	JPoint<Type>* oldFront = m_Front;
 
 	//更新头指针
 	m_Front = m_Front->next;
@@ -343,26 +420,26 @@ void JList<Type>::pop_front()
 
 //返还头 尾 结束 结点指针
 template<class Type>
-Point<Type>* JList<Type>::front()
+JPoint<Type>* JList<Type>::front()
 {
 	return this->m_Front;
 }
 template<class Type>
-Point<Type>* JList<Type>::back()
+JPoint<Type>* JList<Type>::back()
 {
 	return this->m_Back;
 }
 template<class Type>
-Point<Type>* JList<Type>::end()
+JPoint<Type>* JList<Type>::end()
 {
 	return this->m_End;
 }
 
 //数据查找(返回一个结点指针，找不到返回end)
 template<class Type>
-Point<Type>* JList<Type>::find(Type val)
+JPoint<Type>* JList<Type>::find(Type val)
 {
-	Point<Type>* it = this->front();//创建迭代器
+	JPoint<Type>* it = this->front();//创建迭代器
 	for (; it != this->m_End; it = it->next)
 	{
 		if (it->val == val)
@@ -378,9 +455,9 @@ Point<Type>* JList<Type>::find(Type val)
 }
 //数据查找(提供指针重载版本)
 template<class Type>
-Point<Type>* JList<Type>::find(Point<Type>* pos, Type val)
+JPoint<Type>* JList<Type>::find(JPoint<Type>* pos, Type val)
 {
-	Point<Type>* it = pos;//创建迭代器
+	JPoint<Type>* it = pos;//创建迭代器
 	for (; it != this->m_End; it = it->next)
 	{
 		if (it->val == val)
@@ -396,9 +473,9 @@ Point<Type>* JList<Type>::find(Point<Type>* pos, Type val)
 }
 //条件查找
 template<class Type>
-Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,bool (*_Pred)())
+JPoint<Type>* JList<Type>::find_if(JPoint<Type>* pos, Type val,bool (*_Pred)())
 {
-	Point<Type>* it = pos;//创建迭代器
+	JPoint<Type>* it = pos;//创建迭代器
 	for (; it != this->m_End; it = it->next)
 	{
 		if (_Pred())
@@ -413,9 +490,9 @@ Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,bool (*_Pred)())
 	}
 }
 template<class Type>
-Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,bool (*_Pred)(Type val))
+JPoint<Type>* JList<Type>::find_if(JPoint<Type>* pos, Type val,bool (*_Pred)(Type val))
 {
-	Point<Type>* it = pos;//创建迭代器
+	JPoint<Type>* it = pos;//创建迭代器
 	for (; it != this->m_End; it = it->next)
 	{
 		if (_Pred(it->val))
@@ -431,9 +508,9 @@ Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,bool (*_Pred)(Type 
 }
 	//仿函数版本
 template<class Type>template<class _Pred>
-Point<Type>* JList<Type>::find_if(Point<Type>* pos, Type val,_Pred pred)
+JPoint<Type>* JList<Type>::find_if(JPoint<Type>* pos, Type val,_Pred pred)
 {
-	Point<Type>* it = pos;//创建迭代器
+	JPoint<Type>* it = pos;//创建迭代器
 	for (; it != this->m_End; it = it->next)
 	{
 		if (pred(it->val))
@@ -458,7 +535,7 @@ int JList<Type>::size()
 
 //中间插入(位置，值)(并返回真假)
 template<class Type>
-bool JList<Type> ::insert(Point<Type>* pos, Type val)
+bool JList<Type> ::insert(JPoint<Type>* pos, Type val)
 {
 	//判断无效指针
 	if (pos == nullptr || pos == this->m_End)
@@ -469,7 +546,7 @@ bool JList<Type> ::insert(Point<Type>* pos, Type val)
 	//在中间插入(含头尾结点情况)  需要插入到pos的后面
 
 	//创建结点指针
-	Point<Type>* ptr = new Point<Type>(val);
+	JPoint<Type>* ptr = new JPoint<Type>(val);
 
 	//链接结点(先将新节点入链，再断开原链)
 	ptr->next = pos->next;
@@ -487,7 +564,7 @@ bool JList<Type> ::insert(Point<Type>* pos, Type val)
 template<class Type>
 bool JList<Type> ::erase(Type val)
 {
-	Point<Type>* ptr = this->find(val);
+	JPoint<Type>* ptr = this->find(val);
 	if (ptr == NULL || ptr == m_End)//无效情况
 	{
 		return false;
@@ -515,9 +592,9 @@ bool JList<Type> ::erase(Type val)
 	return true;
 }
 template<class Type>
-bool JList<Type> ::erase(Point<Type>* pos, Type val)//从何处开始，删掉什么
+bool JList<Type> ::erase(JPoint<Type>* pos, Type val)//从何处开始，删掉什么
 {
-	Point<Type>* ptr = this->find(pos, val);
+	JPoint<Type>* ptr = this->find(pos, val);
 	if (ptr == NULL || ptr == m_End)//无效情况
 	{
 		return false;
@@ -563,12 +640,16 @@ void JList<Type>::clear()
 
 //排序
 template<class Type>
-void JList<Type>::sort(Point<Type>* beg, Point<Type>* end)
+void JList<Type>::sort(JPoint<Type>* beg, JPoint<Type>* end)
 {
-	//默认升序(采用bubbleSort)
-	for (Point<Type>* i = beg; i != end->last; i=i->next)
+	if (!isSafeInterval(beg, end))
 	{
-		for (Point<Type>* j = beg; j != end->last; j = j->next)
+		return;
+	}
+	//默认升序(采用bubbleSort)
+	for (JPoint<Type>* i = beg; i != end->last; i=i->next)
+	{
+		for (JPoint<Type>* j = beg; j != end->last; j = j->next)
 		{
 			if ((j->val) > (j->next->val))
 			{
@@ -578,12 +659,16 @@ void JList<Type>::sort(Point<Type>* beg, Point<Type>* end)
 	}
 }
 template<class Type>
-void JList<Type>::sort(Point<Type>* beg, Point<Type>* end,bool (*_Pred)(Type val_1,Type val_2))
+void JList<Type>::sort(JPoint<Type>* beg, JPoint<Type>* end,bool (*_Pred)(Type val_1,Type val_2))
 {
-	//默认升序(采用bubbleSort)
-	for (Point<Type>* i = beg; i != end->last; i=i->next)
+	if (!isSafeInterval(beg, end))
 	{
-		for (Point<Type>* j = beg; j != end->last; j = j->next)
+		return;
+	}
+	//默认升序(采用bubbleSort)
+	for (JPoint<Type>* i = beg; i != end->last; i=i->next)
+	{
+		for (JPoint<Type>* j = beg; j != end->last; j = j->next)
 		{
 			if (_Pred(j->val,(j->next->val)))
 			{
@@ -595,18 +680,26 @@ void JList<Type>::sort(Point<Type>* beg, Point<Type>* end,bool (*_Pred)(Type val
 
 //遍历
 template<class Type>
-void JList<Type>::for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)())
+void JList<Type>::for_each(JPoint<Type>* beg, JPoint<Type>* end, void (*_Pred)())
 {
-	for(Point<Type> * it=beg;it!=end;it=it->next)
+	if (!isSafeInterval(beg, end))
+	{
+		return;
+	}
+	for(JPoint<Type> * it=beg;it!=end;it=it->next)
 	{
 		_Pred();
 	}
 }
 
 template<class Type>
-void JList<Type>::for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)(Type val))
+void JList<Type>::for_each(JPoint<Type>* beg, JPoint<Type>* end, void (*_Pred)(Type val))
 {
-	for(Point<Type> * it=beg;it!=end;it=it->next)
+	if (!isSafeInterval(beg, end))
+	{
+		return;
+	}
+	for(JPoint<Type> * it=beg;it!=end;it=it->next)
 	{
 		_Pred(it->val);
 	}
@@ -614,20 +707,28 @@ void JList<Type>::for_each(Point<Type>* beg, Point<Type>* end, void (*_Pred)(Typ
 
 //仿函数测试
 template<class Type>template<class _Pred>
-void JList<Type>::for_each(Point<Type>* beg, Point<Type>* end,_Pred pred)
+void JList<Type>::for_each(JPoint<Type>* beg, JPoint<Type>* end,_Pred pred)
 {
-	for(Point<Type> * it=beg;it!=end;it=it->next)
+	if (!isSafeInterval(beg, end))
+	{
+		return;
+	}
+	for(JPoint<Type> * it=beg;it!=end;it=it->next)
 	{
 		pred(it->val);
 	}
 }
 template<class Type>template<class _Pred>
-void JList<Type>::sort(Point<Type>* beg, Point<Type>* end, _Pred pred)
+void JList<Type>::sort(JPoint<Type>* beg, JPoint<Type>* end, _Pred pred)
 {
-	//默认升序(采用bubbleSort)
-	for (Point<Type>* i = beg; i != end->last; i=i->next)
+	if (!isSafeInterval(beg, end))
 	{
-		for (Point<Type>* j = beg; j != end->last; j = j->next)
+		return;
+	}
+	//默认升序(采用bubbleSort)
+	for (JPoint<Type>* i = beg; i != end->last; i=i->next)
+	{
+		for (JPoint<Type>* j = beg; j != end->last; j = j->next)
 		{
 			if (pred(j->val,(j->next->val)))
 			{
